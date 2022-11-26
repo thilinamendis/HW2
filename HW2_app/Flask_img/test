@@ -1,0 +1,28 @@
+FROM ubuntu
+LABEL description = "The Python app"
+MAINTAINER Thilina Mendis <btm0050@auburn.edu>
+USER root
+RUN apt update && apt upgrade
+RUN apt install sudo
+EXPOSE 5000
+RUN sudo apt install curl ca-certificates -y
+COPY mariadb_repo_setup mariadb_repo_setup
+ADD https://downloads.mariadb.com/MariaDB/mariadb_repo_setup ./mariadb_repo_setup
+RUN echo "733cf126b03f73050e242102592658913d10829a5bf056ab77e7f864b3f8de1f  mariadb_repo_setup" | sha256sum -c -
+RUN chmod +x mariadb_repo_setup
+RUN sudo ./mariadb_repo_setup --mariadb-server-version="mariadb-10.6"
+RUN apt install python3 -y
+RUN apt install python3-pip -y
+COPY api.py api.py
+RUN apt-get install libmariadb3 libmariadb-dev -y
+RUN sudo apt install virtualenv -y
+RUN virtualenv pyvenv
+RUN . pyvenv/bin/activate activate
+RUN pip install Flask
+EXPOSE 5000
+
+ENTRYPOINT python3 api.py
+#CMD ["api.py"]
+#ENTRYPOINT ["python3"]
+#ENTRYPOINT ["python3" , "api.py"]
+#CMD ["python3","api.py"]
