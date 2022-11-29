@@ -1,0 +1,75 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    labels:
+      app: application
+      name: mariadb
+    name: mariadb
+  spec:
+    containers:
+    - name: mariadb
+      env:
+      - name: MARIADB_ROOT_PASSWORD
+        value: Password123!
+      - name: MARIADB_DATABASE
+        value: demo
+      image: quay.io/rpatel0019/db_image
+      ports:
+      - containerPort: 3306
+        name: mariadb
+      volumeMounts:
+      - mountPath: /var/lib/mysql
+        name: mariadb-volume
+
+
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    labels:
+      app: application
+      name: flaskapp
+    name: flaskapp
+  spec:
+    containers:
+    - env:
+      - name: IP_ADDR
+        value: mariadb_SERVICE_HOST
+      image: quay.io/rpatel0019/flaskapp_image
+      name: flaskapp
+      ports:
+      - containerPort: 5000
+        name: flaskapp
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: application
+      name: flaskapp
+    name: flaskapp
+  spec:
+    ports:
+    - port: 5000
+    selector: 
+      name: flaskapp
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels: 
+      app: application
+      name: mariadb
+    name: mariadb
+  spec:
+    ports:
+    - port: 3306
+    selector:
+      name: mariadb
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata: 
+    labels: 
+      app: application
+    name: mariadb-claim
+kind: List
+metadata: {}
